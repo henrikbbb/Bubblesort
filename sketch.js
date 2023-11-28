@@ -1,22 +1,58 @@
 let blocks = []
-let block_width = 50
+let block_width
 let block_height_min = 50
-let block_height_max = 300
+let block_height_max = 400
 let current_index
 let timer
 let mode
-let slider
+let sliderSpeed
+let sliderAmount
 let n
 
 function setup() {
 	createCanvas(1000, 400)
 
-	n = 10
+
+	sliderSpeed = createSlider(200, 1000, 1000, 100)
+	createSpan('Pause zwischen den Schritten')
+	createElement('br')
+	sliderAmount = createSlider(10, 100, 10, 1)
+	createSpan('Anzahl')
+
+	createElement('br')
+
+	let button = createButton('restart')
+	button.mousePressed(() => {
+		setupArray()
+	})
+
+	setupArray()
+
+}
+
+function setupArray() {
+	for (let i = blocks.length - 1; i >= 0; i--) {
+		blocks[i].remove()
+	}
+
+	n = sliderAmount.value()
+
+	block_width = width/n
 
 	current_index = 0
 
+	let sizes = []
 	for (let i = 0; i < n; i++) {
-		let h = random(block_height_min, block_height_max)
+		let size = map(i, 0, n-1, block_height_min, block_height_max)
+		sizes.push(size)
+	}
+	sizes = sizes.sort(() => Math.random() - 0.5)
+	sizes = sizes.sort(() => Math.random() - 0.5)
+	sizes = sizes.sort(() => Math.random() - 0.5)
+
+	blocks = []
+	for (let i = 0; i < n; i++) {
+		let h = sizes[i]
 		let block = new Sprite(block_width/2 + i*block_width, block_height_max - h/2, block_width, h, 'kinematic')
 		block.color = 'gray'
 		blocks.push(block)
@@ -24,14 +60,12 @@ function setup() {
 
 	mode = 'mark'
 	timer = millis()
-
-	slider = createSlider(200, 1000, 1000, 100)
 }
 
 function draw() {
 	clear()
 
-	if (millis() - timer > slider.value()) {
+	if (millis() - timer > sliderSpeed.value()) {
 		timer = millis()
 		if (mode == 'mark') {
 			markCurrent()
@@ -52,8 +86,9 @@ function draw() {
 
 function swap() {
 	// move
-	blocks[current_index].move(block_width, 'right', 3)
-	blocks[current_index+1].move(block_width, 'left', 3)
+	let speed = 0.07 * block_width
+	blocks[current_index].move(block_width, 'right', speed)
+	blocks[current_index+1].move(block_width, 'left', speed)
 
 	// edit array
 	let temp = blocks[current_index]
